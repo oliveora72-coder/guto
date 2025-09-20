@@ -1,0 +1,13 @@
+{
+  "name": "moviesapi",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "axios": "^1.7.0",
+    "cheerio": "^1.0.0"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "node api/index.js"
+  }
+}
