@@ -1,0 +1,42 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "public": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'oliveora72@gmail.com'"
+    },
+    "settings": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'oliveora72@gmail.com'"
+    },
+    "system": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.email === 'oliveora72@gmail.com'"
+    },
+    "users": {
+      ".read": "auth != null && auth.token.email === 'oliveora72@gmail.com'",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'oliveora72@gmail.com')",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'oliveora72@gmail.com')",
+        "role": {
+          ".validate": "!data.exists() || newData.val() === data.val() || auth.token.email === 'oliveora72@gmail.com'"
+        }
+      }
+    },
+    "keys": {
+      ".read": "auth != null && auth.token.email === 'oliveora72@gmail.com'",
+      ".indexOn": ["claimedBy", "status", "expiresAt"],
+      "$hash": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.token.email === 'oliveora72@gmail.com'",
+        "claimedBy": {
+          ".write": "auth != null && !data.exists() && newData.val() === auth.uid && parent().child('status').val() === 'active' && parent().child('expiresAt').val() > now"
+        },
+        "claimedAt": {
+          ".write": "auth != null && !data.exists() && parent().child('claimedBy').val() === auth.uid && newData.isNumber()"
+        }
+      }
+    }
+  }
+}

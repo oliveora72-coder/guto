@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07070b" />
+    <meta
+      name="description"
+      content="KageSync — controle preciso, perfis inteligentes e uma experiência de mapeamento feita para jogar."
+    />
+    <title>KageSync — Controle sem limites</title>
+    <link rel="icon" href="/assets/kage-mascot.webp" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+    <div id="global-banner" class="global-banner" hidden></div>
+
+    <header class="site-header">
+      <a class="brand" href="/" data-route aria-label="KageSync — início">
+        <span class="brand-mark">
+          <img src="/assets/kage-mascot.webp" alt="" />
+        </span>
+        <span>Kage<span>Sync</span></span>
+      </a>
+
+      <nav class="desktop-nav" aria-label="Navegação principal">
+        <a href="/#recursos">Recursos</a>
+        <a href="/#como-funciona">Como funciona</a>
+        <a href="/#seguranca">Segurança</a>
+      </nav>
+
+      <div class="header-actions" id="header-actions">
+        <a class="button button-ghost" href="/login" data-route>Entrar</a>
+        <a class="button button-primary button-small" href="/login?mode=register" data-route>Criar conta</a>
+      </div>
+    </header>
+
+    <main id="app" tabindex="-1"></main>
+
+    <footer class="site-footer">
+      <a class="brand brand-footer" href="/" data-route>
+        <span class="brand-mark"><img src="/assets/kage-mascot.webp" alt="" /></span>
+        <span>Kage<span>Sync</span></span>
+      </a>
+      <p>Controle preciso. Configuração simples. Seu jogo, do seu jeito.</p>
+      <span>© <span id="current-year"></span> KageSync</span>
+    </footer>
+
+    <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
