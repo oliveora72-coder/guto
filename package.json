@@ -1,0 +1,13 @@
+{
+  "name": "space-pay-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Gateway brasileira de pagamentos com Mercado Pago, PIX, painel, API e webhooks.",
+  "scripts": {
+    "check": "node --check api/index.js && node --check api/lib.js && node --check app.js && node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

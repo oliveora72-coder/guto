@@ -1,60 +1,143 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#07070b" />
-    <meta
-      name="description"
-      content="KageSync — controle preciso, perfis inteligentes e uma experiência de mapeamento feita para jogar."
-    />
-    <title>KageSync — Controle sem limites</title>
-    <link rel="icon" href="/assets/kage-mascot.webp" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/styles.css" />
-  </head>
-  <body>
-    <div class="noise" aria-hidden="true"></div>
-    <div id="global-banner" class="global-banner" hidden></div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090b10">
+  <meta name="description" content="Space Pay Gateway — cobranças PIX e cartão, API, webhooks, saques e gestão financeira.">
+  <title>Space Pay Gateway</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
 
-    <header class="site-header">
-      <a class="brand" href="/" data-route aria-label="KageSync — início">
-        <span class="brand-mark">
-          <img src="/assets/kage-mascot.webp" alt="" />
-        </span>
-        <span>Kage<span>Sync</span></span>
-      </a>
-
-      <nav class="desktop-nav" aria-label="Navegação principal">
-        <a href="/#recursos">Recursos</a>
-        <a href="/#como-funciona">Como funciona</a>
-        <a href="/#seguranca">Segurança</a>
-      </nav>
-
-      <div class="header-actions" id="header-actions">
-        <a class="button button-ghost" href="/login" data-route>Entrar</a>
-        <a class="button button-primary button-small" href="/login?mode=register" data-route>Criar conta</a>
+  <main id="auth-screen" class="auth-screen">
+    <section class="auth-showcase">
+      <a class="brand brand-large" href="#"><span class="brand-mark">S</span><span>SPACE<span>PAY</span></span></a>
+      <div class="showcase-copy">
+        <span class="eyebrow"><i></i> INFRAESTRUTURA DE PAGAMENTOS</span>
+        <h1>Receba, gerencie e cresça <em>sem travar.</em></h1>
+        <p>PIX e cartão, conciliação, saques, antifraude, webhooks e uma API feita para integrar rápido.</p>
+        <div class="showcase-stats">
+          <div><strong>99,99%</strong><span>Disponibilidade alvo</span></div>
+          <div><strong>&lt; 1s</strong><span>Criação no sandbox</span></div>
+          <div><strong>24/7</strong><span>Monitoramento</span></div>
+        </div>
       </div>
-    </header>
+      <div class="signal-card" aria-hidden="true">
+        <div class="signal-top"><span>Pagamento confirmado</span><b>AO VIVO</b></div>
+        <strong>R$ 1.284,90</strong>
+        <div class="signal-grid"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+    </section>
 
-    <main id="app" tabindex="-1"></main>
+    <section class="auth-panel">
+      <div class="auth-box">
+        <div class="mobile-brand brand"><span class="brand-mark">S</span><span>SPACE<span>PAY</span></span></div>
+        <div class="auth-tabs" role="tablist">
+          <button class="active" data-auth-tab="login" role="tab">Entrar</button>
+          <button data-auth-tab="register" role="tab">Criar conta</button>
+        </div>
+        <form id="login-form" class="auth-form">
+          <div class="form-heading"><span class="eyebrow">BEM-VINDO DE VOLTA</span><h2>Acesse seu painel</h2><p>Use seus dados para continuar.</p></div>
+          <label>E-mail<input name="email" type="email" autocomplete="email" placeholder="voce@empresa.com" required></label>
+          <label>Senha<input name="password" type="password" autocomplete="current-password" placeholder="Sua senha" minlength="10" required></label>
+          <button class="btn primary wide" type="submit"><span>Entrar na Space Pay</span><b>→</b></button>
+          <button id="demo-button" class="btn ghost wide" type="button">Explorar demonstração</button>
+        </form>
+        <form id="register-form" class="auth-form hidden">
+          <div class="form-heading"><span class="eyebrow">COMECE NO SANDBOX</span><h2>Crie sua conta</h2><p>Teste a plataforma antes de ativar pagamentos reais.</p></div>
+          <div class="field-row"><label>Seu nome<input name="name" required minlength="2" placeholder="Seu nome"></label><label>Empresa<input name="business_name" required minlength="2" placeholder="Minha loja"></label></div>
+          <label>E-mail<input name="email" type="email" autocomplete="email" required placeholder="voce@empresa.com"></label>
+          <label>Senha<input name="password" type="password" autocomplete="new-password" minlength="10" required placeholder="Mínimo de 10 caracteres"></label>
+          <button class="btn primary wide" type="submit"><span>Criar minha conta</span><b>→</b></button>
+        </form>
+        <p class="legal">Ao continuar, você concorda com os termos de uso e a política de privacidade.</p>
+      </div>
+    </section>
+  </main>
 
-    <footer class="site-footer">
-      <a class="brand brand-footer" href="/" data-route>
-        <span class="brand-mark"><img src="/assets/kage-mascot.webp" alt="" /></span>
-        <span>Kage<span>Sync</span></span>
-      </a>
-      <p>Controle preciso. Configuração simples. Seu jogo, do seu jeito.</p>
-      <span>© <span id="current-year"></span> KageSync</span>
-    </footer>
+  <div id="app-shell" class="app-shell hidden">
+    <aside class="sidebar">
+      <a class="brand" href="#overview"><span class="brand-mark">S</span><span>SPACE<span>PAY</span></span></a>
+      <nav class="nav-list" aria-label="Navegação principal">
+        <span class="nav-label">VISÃO GERAL</span>
+        <button class="nav-item active" data-view="overview"><b>⌂</b><span>Início</span></button>
+        <button class="nav-item" data-view="transactions"><b>↔</b><span>Transações</span><i id="pending-count">0</i></button>
+        <button class="nav-item" data-view="links"><b>⌁</b><span>Links de pagamento</span></button>
+        <span class="nav-label">FINANCEIRO</span>
+        <button class="nav-item" data-view="balance"><b>▣</b><span>Saldo e saques</span></button>
+        <button class="nav-item" data-view="customers"><b>◎</b><span>Clientes</span></button>
+        <span class="nav-label">INTEGRAÇÃO</span>
+        <button class="nav-item" data-view="developers"><b>{ }</b><span>Desenvolvedores</span></button>
+        <button class="nav-item" data-view="settings"><b>⚙</b><span>Configurações</span></button>
+        <button id="admin-nav" class="nav-item hidden" data-view="admin"><b>◆</b><span>Administração</span></button>
+      </nav>
+      <div class="side-foot">
+        <div class="status-line"><i></i><span>Todos os sistemas operacionais</span></div>
+        <button id="logout-button" class="profile-mini"><span id="avatar">SP</span><span><strong id="side-user-name">Space User</strong><small id="side-user-email">user@spacepay.com</small></span><b>⋮</b></button>
+      </div>
+    </aside>
 
-    <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+    <div class="main-column">
+      <header class="topbar">
+        <button id="menu-button" class="icon-button mobile-only" aria-label="Abrir menu">☰</button>
+        <div><p id="breadcrumb">PAINEL / INÍCIO</p><h1 id="page-title">Visão geral</h1></div>
+        <div class="top-actions">
+          <span id="environment-badge" class="environment"><i></i> SANDBOX</span>
+          <button class="icon-button" aria-label="Notificações">♢<i class="notify-dot"></i></button>
+          <button class="btn primary" data-open-charge><span>＋</span> Nova cobrança</button>
+        </div>
+      </header>
 
-    <script type="module" src="/app.js"></script>
-  </body>
+      <main class="content">
+        <section id="view-overview" class="view active">
+          <div class="welcome-row"><div><span class="eyebrow">ÚLTIMOS 30 DIAS</span><h2>Olá, <span id="welcome-name">Christian</span>.</h2><p>Acompanhe o desempenho da sua operação em tempo real.</p></div><button class="btn secondary" id="refresh-button">↻ Atualizar</button></div>
+          <div class="metric-grid">
+            <article class="metric featured"><span>VOLUME APROVADO</span><strong id="metric-volume">R$ 0,00</strong><small><b id="metric-approved">0</b> pagamentos aprovados</small><i class="metric-icon">↗</i></article>
+            <article class="metric"><span>SALDO DISPONÍVEL</span><strong id="metric-balance">R$ 0,00</strong><small>Pronto para saque</small><i class="metric-icon">▣</i></article>
+            <article class="metric"><span>TAXA DE APROVAÇÃO</span><strong id="metric-rate">0%</strong><small><b class="positive">●</b> Processamento saudável</small><i class="metric-icon">◎</i></article>
+            <article class="metric"><span>RECEITA DA PLATAFORMA</span><strong id="metric-fees">R$ 0,00</strong><small>Taxas processadas</small><i class="metric-icon">◆</i></article>
+          </div>
+          <div class="dashboard-grid">
+            <article class="panel chart-panel"><div class="panel-head"><div><span class="eyebrow">FLUXO FINANCEIRO</span><h3>Volume processado</h3></div><select aria-label="Período"><option>Últimos 7 dias</option><option>Últimos 30 dias</option></select></div><div id="volume-chart" class="bar-chart" aria-label="Gráfico de volume"></div><div class="chart-labels"><span>SEG</span><span>TER</span><span>QUA</span><span>QUI</span><span>SEX</span><span>SÁB</span><span>DOM</span></div></article>
+            <article class="panel methods-panel"><div class="panel-head"><div><span class="eyebrow">MÉTODOS</span><h3>Distribuição</h3></div></div><div class="donut-wrap"><div class="donut" id="method-donut"><span><strong id="method-total">0</strong><small>transações</small></span></div><ul><li><i class="pix"></i><span>PIX</span><b id="pix-share">0%</b></li><li><i class="card"></i><span>Cartão</span><b id="card-share">0%</b></li></ul></div></article>
+          </div>
+          <article class="panel table-panel"><div class="panel-head"><div><span class="eyebrow">ATIVIDADE RECENTE</span><h3>Últimas transações</h3></div><button class="text-button" data-go="transactions">Ver todas →</button></div><div class="table-scroll"><table><thead><tr><th>TRANSAÇÃO</th><th>CLIENTE</th><th>MÉTODO</th><th>VALOR</th><th>STATUS</th><th>DATA</th></tr></thead><tbody id="recent-transactions"></tbody></table></div><div id="recent-empty" class="empty hidden"><b>↔</b><strong>Nenhuma transação ainda</strong><span>Crie sua primeira cobrança para começar.</span></div></article>
+        </section>
+
+        <section id="view-transactions" class="view">
+          <div class="action-row"><div class="search"><span>⌕</span><input id="transaction-search" placeholder="Buscar por cliente ou referência"></div><select id="transaction-status"><option value="">Todos os status</option><option value="approved">Aprovada</option><option value="pending">Pendente</option><option value="action_required">Aguardando pagamento</option><option value="rejected">Recusada</option><option value="refunded">Reembolsada</option></select><button class="btn primary" data-open-charge>＋ Nova cobrança</button></div>
+          <article class="panel table-panel"><div class="panel-head"><div><span class="eyebrow">HISTÓRICO</span><h3>Todas as transações</h3></div></div><div class="table-scroll"><table><thead><tr><th>ID / REFERÊNCIA</th><th>PAGADOR</th><th>MÉTODO</th><th>BRUTO</th><th>LÍQUIDO</th><th>STATUS</th><th>AÇÕES</th></tr></thead><tbody id="transactions-table"></tbody></table></div></article>
+        </section>
+
+        <section id="view-links" class="view"><div class="section-intro"><div><span class="eyebrow">CHECKOUT SEM CÓDIGO</span><h2>Links de pagamento</h2><p>Crie uma página de cobrança e compartilhe em qualquer lugar.</p></div><button class="btn primary" data-dialog="link-dialog">＋ Criar link</button></div><div id="links-grid" class="cards-grid"></div></section>
+
+        <section id="view-balance" class="view"><div class="balance-hero"><div><span>SALDO DISPONÍVEL</span><strong id="balance-available">R$ 0,00</strong><small>Saldo pendente: <b id="balance-pending">R$ 0,00</b> · Reserva: <b id="balance-reserved">R$ 0,00</b></small></div><button class="btn light" data-dialog="withdrawal-dialog">Solicitar saque →</button></div><article class="panel table-panel"><div class="panel-head"><div><span class="eyebrow">MOVIMENTAÇÕES</span><h3>Saques</h3></div></div><div class="table-scroll"><table><thead><tr><th>ID</th><th>CHAVE PIX</th><th>VALOR</th><th>STATUS</th><th>SOLICITADO EM</th></tr></thead><tbody id="withdrawals-table"></tbody></table></div></article></section>
+
+        <section id="view-customers" class="view"><div class="section-intro"><div><span class="eyebrow">BASE DE CLIENTES</span><h2>Clientes</h2><p>Cadastre e acompanhe quem paga sua empresa.</p></div><button class="btn primary" data-dialog="customer-dialog">＋ Novo cliente</button></div><article class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>CLIENTE</th><th>E-MAIL</th><th>TELEFONE</th><th>CADASTRO</th></tr></thead><tbody id="customers-table"></tbody></table></div></article></section>
+
+        <section id="view-developers" class="view"><div class="section-intro"><div><span class="eyebrow">INTEGRAÇÃO</span><h2>Desenvolvedores</h2><p>Chaves, webhooks e exemplos para ligar sua aplicação.</p></div><a class="btn secondary" href="#docs">Documentação da API</a></div><div class="dev-grid"><article class="panel"><div class="panel-head"><div><span class="eyebrow">AUTENTICAÇÃO</span><h3>Chaves de API</h3></div><button class="btn small primary" data-dialog="key-dialog">＋ Nova chave</button></div><div id="api-keys-list" class="stack-list"></div></article><article class="panel"><div class="panel-head"><div><span class="eyebrow">EVENTOS</span><h3>Webhooks</h3></div><button class="btn small primary" data-dialog="webhook-dialog">＋ Endpoint</button></div><div id="webhooks-list" class="stack-list"></div></article></div><article class="code-card"><div><span>EXEMPLO RÁPIDO</span><button id="copy-code">Copiar</button></div><pre><code id="quick-code">curl -X POST https://seu-dominio.vercel.app/api/v1/charges \
+  -H "Authorization: Bearer sp_test_..." \
+  -H "X-Idempotency-Key: pedido-123" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 49.90, "method": "pix", "payer": {"name": "Ana", "email": "ana@email.com"}}'</code></pre></article></section>
+
+        <section id="view-settings" class="view"><div class="section-intro"><div><span class="eyebrow">CONTA</span><h2>Configurações</h2><p>Dados da empresa, taxas e situação cadastral.</p></div></div><div class="settings-grid"><article class="panel"><h3>Empresa</h3><dl id="merchant-details"></dl></article><article class="panel"><h3>Integração financeira</h3><div class="provider-card"><span class="brand-mark mini">M</span><div><strong>Mercado Pago</strong><small id="provider-state">Modo sandbox ativo</small></div><b id="provider-badge" class="status pending">SANDBOX</b></div><p class="hint">As credenciais são armazenadas somente nas variáveis protegidas da hospedagem. Dados completos de cartão nunca passam pelo seu servidor.</p></article></div></section>
+
+        <section id="view-admin" class="view"><div class="section-intro"><div><span class="eyebrow">CONTROLE DA PLATAFORMA</span><h2>Painel administrativo</h2><p>Lojistas, KYC, receita, risco e solicitações de saque.</p></div></div><div id="admin-metrics" class="metric-grid"></div><article class="panel table-panel"><div class="panel-head"><h3>Lojistas</h3></div><div class="table-scroll"><table><thead><tr><th>EMPRESA</th><th>E-MAIL</th><th>KYC</th><th>STATUS</th><th>SALDO</th><th>CRIADA EM</th></tr></thead><tbody id="merchants-table"></tbody></table></div></article><article class="panel table-panel"><div class="panel-head"><h3>Saques aguardando revisão</h3></div><div class="table-scroll"><table><thead><tr><th>LOJISTA</th><th>CHAVE</th><th>VALOR</th><th>STATUS</th><th>AÇÕES</th></tr></thead><tbody id="admin-withdrawals"></tbody></table></div></article></section>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="charge-dialog"><form id="charge-form" class="dialog-card"><header><div><span class="eyebrow">NOVA VENDA</span><h2>Criar cobrança</h2></div><button type="button" class="dialog-close" aria-label="Fechar">×</button></header><label>Valor<input name="amount" inputmode="decimal" placeholder="R$ 0,00" required></label><div class="method-choice"><label><input type="radio" name="method" value="pix" checked><span><b>◆</b><strong>PIX</strong><small>Aprovação imediata</small></span></label><label><input type="radio" name="method" value="card"><span><b>▰</b><strong>Cartão</strong><small>Via token da API</small></span></label></div><div class="field-row"><label>Nome do pagador<input name="payer_name" required placeholder="Nome completo"></label><label>E-mail<input name="payer_email" type="email" required placeholder="cliente@email.com"></label></div><label>Descrição<input name="description" placeholder="Pedido #123"></label><footer><button type="button" class="btn secondary dialog-close">Cancelar</button><button type="submit" class="btn primary">Criar cobrança →</button></footer></form></dialog>
+  <dialog id="link-dialog"><form id="link-form" class="dialog-card"><header><div><span class="eyebrow">CHECKOUT</span><h2>Novo link</h2></div><button type="button" class="dialog-close">×</button></header><label>Título<input name="title" required placeholder="Produto ou serviço"></label><label>Descrição<textarea name="description" placeholder="Explique o que está sendo vendido"></textarea></label><label>Valor opcional<input name="amount" inputmode="decimal" placeholder="Deixe vazio para valor livre"></label><footer><button type="button" class="btn secondary dialog-close">Cancelar</button><button class="btn primary">Criar link</button></footer></form></dialog>
+  <dialog id="customer-dialog"><form id="customer-form" class="dialog-card"><header><div><span class="eyebrow">CLIENTE</span><h2>Novo cliente</h2></div><button type="button" class="dialog-close">×</button></header><label>Nome<input name="name" required></label><label>E-mail<input name="email" type="email"></label><label>Telefone<input name="phone"></label><footer><button type="button" class="btn secondary dialog-close">Cancelar</button><button class="btn primary">Salvar cliente</button></footer></form></dialog>
+  <dialog id="withdrawal-dialog"><form id="withdrawal-form" class="dialog-card"><header><div><span class="eyebrow">FINANCEIRO</span><h2>Solicitar saque</h2></div><button type="button" class="dialog-close">×</button></header><label>Valor<input name="amount" inputmode="decimal" required></label><label>Tipo da chave<select name="pix_key_type"><option value="cpf">CPF</option><option value="cnpj">CNPJ</option><option value="email">E-mail</option><option value="phone">Telefone</option><option value="random">Aleatória</option></select></label><label>Chave PIX<input name="pix_key" required autocomplete="off"></label><p class="hint">Saques reais passam por revisão. No sandbox, a aprovação é simulada.</p><footer><button type="button" class="btn secondary dialog-close">Cancelar</button><button class="btn primary">Solicitar saque</button></footer></form></dialog>
+  <dialog id="key-dialog"><form id="key-form" class="dialog-card"><header><div><span class="eyebrow">API</span><h2>Nova chave</h2></div><button type="button" class="dialog-close">×</button></header><label>Nome<input name="name" required value="Chave principal"></label><label>Ambiente<select name="mode"><option value="test">Teste</option><option value="live">Produção</option></select></label><footer><button type="button" class="btn secondary dialog-close">Cancelar</button><button class="btn primary">Gerar chave</button></footer></form></dialog>
+  <dialog id="webhook-dialog"><form id="webhook-form" class="dialog-card"><header><div><span class="eyebrow">EVENTOS</span><h2>Novo endpoint</h2></div><button type="button" class="dialog-close">×</button></header><label>URL HTTPS<input name="url" type="url" required placeholder="https://seusite.com/webhooks/spacepay"></label><label>Descrição<input name="description" placeholder="Produção"></label><footer><button type="button" class="btn secondary dialog-close">Cancelar</button><button class="btn primary">Adicionar endpoint</button></footer></form></dialog>
+  <dialog id="secret-dialog"><div class="dialog-card secret-card"><header><div><span class="eyebrow">COPIE AGORA</span><h2 id="secret-title">Segredo criado</h2></div><button type="button" class="dialog-close">×</button></header><p>Por segurança, este valor não será mostrado novamente.</p><code id="secret-value"></code><button id="copy-secret" class="btn primary wide">Copiar segredo</button></div></dialog>
+  <script type="module" src="/app.js"></script>
+</body>
 </html>

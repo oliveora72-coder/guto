@@ -1,0 +1,102 @@
+openapi: 3.1.0
+info:
+  title: Space Pay Gateway API
+  version: 1.0.0
+  description: API de cobranças, clientes, reembolsos, links e saques.
+servers:
+  - url: https://SEU-DOMINIO.vercel.app/api
+security:
+  - apiKey: []
+paths:
+  /health:
+    get:
+      security: []
+      summary: Verificar saúde
+      responses:
+        '200': { description: Operacional }
+  /v1/charges:
+    get:
+      summary: Listar cobranças
+      responses:
+        '200': { description: Lista paginada }
+    post:
+      summary: Criar cobrança
+      parameters:
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCharge' }
+      responses:
+        '201': { description: Cobrança criada }
+        '409': { description: Conflito de idempotência }
+  /v1/charges/{id}:
+    get:
+      summary: Consultar cobrança
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200': { description: Cobrança }
+        '404': { description: Não encontrada }
+  /v1/charges/{id}/refund:
+    post:
+      summary: Reembolsar total ou parcialmente
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount: { type: number, minimum: 0.5 }
+                reason: { type: string, maxLength: 200 }
+      responses:
+        '201': { description: Reembolso criado }
+  /v1/customers:
+    get: { summary: Listar clientes, responses: { '200': { description: Lista } } }
+    post: { summary: Criar cliente, responses: { '201': { description: Criado } } }
+  /v1/payment-links:
+    get: { summary: Listar links, responses: { '200': { description: Lista } } }
+    post: { summary: Criar link, responses: { '201': { description: Criado } } }
+  /v1/withdrawals:
+    get: { summary: Listar saques, responses: { '200': { description: Lista } } }
+    post: { summary: Solicitar saque, responses: { '201': { description: Solicitado } } }
+components:
+  securitySchemes:
+    apiKey:
+      type: http
+      scheme: bearer
+      bearerFormat: sp_test_ ou sp_live_
+  parameters:
+    Id:
+      in: path
+      name: id
+      required: true
+      schema: { type: string, format: uuid }
+  schemas:
+    CreateCharge:
+      type: object
+      required: [amount, method, payer]
+      properties:
+        external_reference: { type: string, maxLength: 100 }
+        amount: { type: number, minimum: 0.5 }
+        method: { type: string, enum: [pix, card] }
+        description: { type: string, maxLength: 200 }
+        payer:
+          type: object
+          required: [name, email]
+          properties:
+            name: { type: string }
+            email: { type: string, format: email }
+        card_token: { type: string, description: Token de uso único gerado no Mercado Pago.js }
+        payment_method_id: { type: string, example: visa }
+        installments: { type: integer, minimum: 1, maximum: 24 }
