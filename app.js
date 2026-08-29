@@ -89,9 +89,15 @@ function friendlyError(error) {
     "auth/weak-password": "Use uma senha com pelo menos 6 caracteres.",
     "auth/popup-closed-by-user": "A janela do Google foi fechada antes de concluir.",
     "auth/unauthorized-domain": "Adicione este domínio aos domínios autorizados do Firebase.",
+    "database/permission-denied": "O Realtime Database está bloqueado pelas regras do Firebase.",
+    "permission-denied": "O Realtime Database está bloqueado pelas regras do Firebase.",
     PERMISSION_DENIED: "As regras do Firebase ainda precisam ser publicadas.",
   };
-  return messages[code] || messages[error?.message] || error?.message || "Não foi possível concluir agora.";
+  const rawMessage = String(error?.message || "");
+  if (rawMessage.toLowerCase().includes("permission_denied") || rawMessage.toLowerCase().includes("permission denied")) {
+    return "O Realtime Database está bloqueado. Publique o arquivo database.rules.json no Firebase.";
+  }
+  return messages[code] || messages[error?.message] || rawMessage || "Não foi possível concluir agora.";
 }
 
 async function hasAdminAccess(user = currentUser) {
@@ -315,12 +321,17 @@ async function handleEmailAuth(event) {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       const name = String(data.get("name") || "Usuário").trim();
       await updateProfile(result.user, { displayName: name });
-      await set(ref(db, `users/${result.user.uid}`), {
-        name,
-        email: result.user.email,
-        createdAt: Date.now(),
-        role: email.toLowerCase() === ADMIN_EMAIL ? "admin" : "user",
-      });
+      try {
+        await set(ref(db, `users/${result.user.uid}`), {
+          name,
+          email: result.user.email,
+          createdAt: Date.now(),
+          role: email.toLowerCase() === ADMIN_EMAIL ? "admin" : "user",
+        });
+      } catch (databaseError) {
+        localStorage.setItem("kagesync-profile", JSON.stringify({ name, email: result.user.email }));
+        notify(friendlyError(databaseError), "error");
+      }
       notify("Conta criada. Bem-vindo ao KageSync!", "success");
     } else {
       await signInWithEmailAndPassword(auth, email, password);
@@ -340,14 +351,19 @@ async function handleGoogleAuth() {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     const userRef = ref(db, `users/${result.user.uid}`);
-    const existing = await get(userRef);
-    if (!existing.exists()) {
-      await set(userRef, {
-        name: result.user.displayName || "Usuário",
-        email: result.user.email,
-        createdAt: Date.now(),
-        role: (result.user.email || "").toLowerCase() === ADMIN_EMAIL ? "admin" : "user",
-      });
+    try {
+      const existing = await get(userRef);
+      if (!existing.exists()) {
+        await set(userRef, {
+          name: result.user.displayName || "Usuário",
+          email: result.user.email,
+          createdAt: Date.now(),
+          role: (result.user.email || "").toLowerCase() === ADMIN_EMAIL ? "admin" : "user",
+        });
+      }
+    } catch (databaseError) {
+      localStorage.setItem("kagesync-profile", JSON.stringify({ name: result.user.displayName || "Usuário", email: result.user.email }));
+      notify(friendlyError(databaseError), "error");
     }
     notify("Conta conectada com o Google.", "success");
     navigate("/app");
@@ -412,15 +428,18 @@ async function renderDashboard(token) {
     if (token !== routeToken) return;
     paintDashboard(userData, settings, system, license);
   } catch (error) {
-    setPage(
-      `<section class="dashboard-shell section-shell">${mascotMessage("Falta só uma etapa", "As regras do Firebase ainda precisam ser publicadas para liberar o painel.", "red")}<div class="setup-card"><h2>Não consegui abrir sua conta</h2><p>${escapeHtml(friendlyError(error))}</p><button class="button button-outline" id="retry-dashboard">Tentar novamente</button></div></section>`,
-      "page-dashboard",
+    const localProfile = JSON.parse(localStorage.getItem("kagesync-profile") || "{}");
+    paintDashboard(
+      { name: localProfile.name || currentUser.displayName || "jogador", email: currentUser.email },
+      {},
+      {},
+      null,
+      friendlyError(error),
     );
-    document.querySelector("#retry-dashboard").addEventListener("click", renderRoute);
   }
 }
 
-function paintDashboard(userData, settings, system, license) {
+function paintDashboard(userData, settings, system, license, connectionError = "") {
   const isExpired = license && Number(license.expiresAt) <= Date.now();
   const isRevoked = license?.status === "revoked";
   const licenseActive = license && !isExpired && !isRevoked;
@@ -430,11 +449,11 @@ function paintDashboard(userData, settings, system, license) {
   setPage(
     `
       <section class="dashboard-shell section-shell">
-        <div class="dashboard-topbar">
+        <div class="dashboard-topbar user-dashboard-topbar">
           <div>
             <span class="eyebrow eyebrow-plain">PAINEL KAGESYNC</span>
             <h1>Olá, ${escapeHtml(userData.name || currentUser.displayName || "jogador")}.</h1>
-            <p>Acompanhe sua licença e os avisos oficiais por aqui.</p>
+            <p>Seu controle, sua licença e todas as novidades em um só lugar.</p>
           </div>
           <div class="dashboard-actions">
             ${(currentUser.email || "").toLowerCase() === ADMIN_EMAIL ? '<a class="button button-outline" href="/admin" data-route>Abrir admin</a>' : ""}
@@ -442,8 +461,20 @@ function paintDashboard(userData, settings, system, license) {
           </div>
         </div>
 
+        ${connectionError ? `<div class="firebase-alert"><span>!</span><div><strong>Firebase ainda bloqueado</strong><p>${escapeHtml(connectionError)}</p></div><button id="retry-dashboard" type="button">Tentar novamente</button></div>` : ""}
         ${system.appDisabled ? `<div class="danger-banner"><strong>Aplicativo temporariamente desativado</strong><p>${escapeHtml(system.disabledReason || "Aguarde um novo aviso da equipe KageSync.")}</p></div>` : ""}
-        ${announcement?.message ? mascotMessage(announcement.title || "Aviso oficial", announcement.message, announcement.tone || "violet") : mascotMessage("Seu painel está pronto", "Aqui você resgata sua key e acompanha o tempo restante da licença.")}
+
+        <section class="user-welcome-card">
+          <div class="welcome-copy">
+            <span class="welcome-kicker"><i></i> CENTRAL DO JOGADOR</span>
+            <h2>Pronto para elevar<br />seu controle?</h2>
+            <p>Ative sua key, acompanhe a licença e receba os avisos oficiais do KageSync sem perder tempo.</p>
+            <div class="welcome-pills"><span><b>${licenseActive ? "Ativa" : "Pendente"}</b> Licença</span><span><b>1</b> Dispositivo</span><span><b>Online</b> Conta</span></div>
+          </div>
+          <div class="welcome-character"><div class="green-orbit"></div><img src="/assets/kage-mascot.webp" alt="Kage, mascote feminina do KageSync" /></div>
+        </section>
+
+        ${announcement?.message ? mascotMessage(announcement.title || "Aviso oficial", announcement.message, announcement.tone || "violet") : ""}
 
         <div class="dashboard-grid">
           <article class="panel-card license-card ${licenseActive ? "active-license" : ""}">
@@ -488,6 +519,7 @@ function paintDashboard(userData, settings, system, license) {
     navigate("/");
   });
   document.querySelector("#redeem-form").addEventListener("submit", handleRedeemKey);
+  document.querySelector("#retry-dashboard")?.addEventListener("click", renderRoute);
 
   subscriptions.push(
     onValue(ref(db, "system/broadcast"), (snapshot) => {
@@ -555,8 +587,14 @@ async function renderAdmin(token) {
     return;
   }
   if (!(await hasAdminAccess())) {
-    notify("Esta área é exclusiva do administrador.", "error");
-    navigate("/app");
+    setPage(
+      `<section class="admin-shell section-shell"><div class="admin-access-card"><img src="/assets/kage-mascot.webp" alt="Kage" /><div><span>ACESSO PROTEGIDO</span><h1>Esta conta não é administradora</h1><p>Você entrou como <strong>${escapeHtml(currentUser.email || "conta sem e-mail")}</strong>. O painel está configurado para ${escapeHtml(ADMIN_EMAIL)}.</p><div><button class="button button-primary" id="switch-admin-account">Trocar de conta</button><a class="button button-outline" href="/app" data-route>Voltar ao painel</a></div></div></div></section>`,
+      "page-admin",
+    );
+    document.querySelector("#switch-admin-account").addEventListener("click", async () => {
+      await signOut(auth);
+      navigate("/login");
+    });
     return;
   }
 
@@ -571,11 +609,11 @@ async function renderAdmin(token) {
     if (token !== routeToken) return;
     paintAdmin(keysSnapshot.val() || {}, usersSnapshot.val() || {}, systemSnapshot.val() || {}, settingsSnapshot.val() || {});
   } catch (error) {
-    setPage(`<section class="admin-shell section-shell">${mascotMessage("O painel está protegido", "Publique as regras do Firebase para liberar as ferramentas administrativas.", "red")}<div class="setup-card"><h2>Configuração necessária</h2><p>${escapeHtml(friendlyError(error))}</p><p>Use o arquivo <strong>database.rules.json</strong> deste projeto no Realtime Database.</p></div></section>`, "page-admin");
+    paintAdmin({}, {}, {}, {}, friendlyError(error));
   }
 }
 
-function paintAdmin(keys, users, system, settings) {
+function paintAdmin(keys, users, system, settings, connectionError = "") {
   const keyEntries = Object.entries(keys).sort(([, a], [, b]) => Number(b.createdAt) - Number(a.createdAt));
   const activeCount = keyEntries.filter(([, key]) => keyStatus(key).label === "ATIVA").length;
   const claimedCount = keyEntries.filter(([, key]) => Boolean(key.claimedBy)).length;
@@ -588,6 +626,8 @@ function paintAdmin(keys, users, system, settings) {
           <div><span class="eyebrow eyebrow-plain">CENTRAL DE CONTROLE</span><h1>Admin KageSync</h1><p>Licenças, comunicação e estado do aplicativo em um só lugar.</p></div>
           <div class="dashboard-actions"><a class="button button-outline" href="/app" data-route>Ver como usuário</a><button class="button button-ghost danger-text" id="admin-sign-out">Sair</button></div>
         </div>
+
+        ${connectionError ? `<div class="firebase-alert admin-firebase-alert"><span>!</span><div><strong>O painel abriu, mas o banco está bloqueado</strong><p>${escapeHtml(connectionError)} Depois de publicar as regras, os botões passam a salvar no site e no aplicativo.</p></div><button id="retry-admin" type="button">Testar conexão</button></div>` : ""}
 
         <div class="stat-grid">
           <article><span>KEYS TOTAIS</span><strong>${keyEntries.length}</strong><small>Todas as licenças</small></article>
@@ -678,6 +718,7 @@ function paintAdmin(keys, users, system, settings) {
   );
 
   bindAdminEvents();
+  document.querySelector("#retry-admin")?.addEventListener("click", renderRoute);
 }
 
 function randomKeyPart(length = 4) {
@@ -689,6 +730,27 @@ function randomKeyPart(length = 4) {
 
 function createKeyCode() {
   return `KAGE-${randomKeyPart()}-${randomKeyPart()}-${randomKeyPart()}`;
+}
+
+async function runAdminAction(button, action, successMessage) {
+  const originalText = button?.textContent || "Salvar";
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Salvando…";
+  }
+  try {
+    await action();
+    notify(successMessage, "success");
+    return true;
+  } catch (error) {
+    notify(friendlyError(error), "error");
+    return false;
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
 }
 
 function bindAdminEvents() {
@@ -744,30 +806,46 @@ function bindAdminEvents() {
   document.querySelector("#broadcast-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    await set(ref(db, "system/broadcast"), { title: data.get("title") || "KageSync", message: data.get("message") || "", tone: data.get("tone") || "violet", publishedAt: Date.now() });
-    notify("Mensagem publicada para os usuários.", "success");
+    const button = event.currentTarget.querySelector("button[type=submit]");
+    await runAdminAction(
+      button,
+      () => set(ref(db, "system/broadcast"), { title: data.get("title") || "KageSync", message: data.get("message") || "", tone: data.get("tone") || "violet", publishedAt: Date.now() }),
+      "Mensagem publicada para os usuários.",
+    );
   });
 
   document.querySelector("#update-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    await set(ref(db, "system/update"), { version: data.get("version") || "", url: data.get("url") || "", message: data.get("message") || "", required: data.get("required") === "on", publishedAt: Date.now() });
-    notify("Atualização salva.", "success");
+    const button = event.currentTarget.querySelector("button[type=submit]");
+    await runAdminAction(
+      button,
+      () => set(ref(db, "system/update"), { version: data.get("version") || "", url: data.get("url") || "", message: data.get("message") || "", required: data.get("required") === "on", publishedAt: Date.now() }),
+      "Atualização salva.",
+    );
   });
 
   document.querySelector("#app-state-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    await update(ref(db, "system"), { appDisabled: data.get("disabled") === "on", disabledReason: data.get("reason") || "", stateUpdatedAt: Date.now() });
-    notify("Estado do aplicativo atualizado.", "success");
-    renderRoute();
+    const button = event.currentTarget.querySelector("button[type=submit]");
+    const saved = await runAdminAction(
+      button,
+      () => update(ref(db, "system"), { appDisabled: data.get("disabled") === "on", disabledReason: data.get("reason") || "", stateUpdatedAt: Date.now() }),
+      "Estado do aplicativo atualizado.",
+    );
+    if (saved) renderRoute();
   });
 
   document.querySelector("#discord-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    await update(ref(db, "settings"), { discordInvite: data.get("invite") || "", discordServerId: data.get("serverId") || "", updatedAt: Date.now() });
-    notify("Configuração do Discord salva.", "success");
+    const button = event.currentTarget.querySelector("button[type=submit]");
+    await runAdminAction(
+      button,
+      () => update(ref(db, "settings"), { discordInvite: data.get("invite") || "", discordServerId: data.get("serverId") || "", updatedAt: Date.now() }),
+      "Configuração do Discord salva.",
+    );
   });
 
   document.querySelectorAll("[data-copy-key]").forEach((button) => {
@@ -782,9 +860,12 @@ function bindAdminEvents() {
   document.querySelectorAll("[data-key-action]").forEach((button) => {
     button.addEventListener("click", async () => {
       const status = button.dataset.keyAction === "revoke" ? "revoked" : "active";
-      await update(ref(db, `keys/${button.dataset.keyHash}`), { status, statusUpdatedAt: Date.now() });
-      notify(status === "revoked" ? "Key revogada." : "Key reativada.", "success");
-      renderRoute();
+      const saved = await runAdminAction(
+        button,
+        () => update(ref(db, `keys/${button.dataset.keyHash}`), { status, statusUpdatedAt: Date.now() }),
+        status === "revoked" ? "Key revogada." : "Key reativada.",
+      );
+      if (saved) renderRoute();
     });
   });
 }

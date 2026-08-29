@@ -4,32 +4,32 @@
     ".write": false,
     "public": {
       ".read": true,
-      ".write": "auth != null && auth.token.email === 'oliveora72@gmail.com'"
+      ".write": "auth != null && (auth.token.email === 'oliveora72@gmail.com' || auth.token.admin === true)"
     },
     "settings": {
       ".read": true,
-      ".write": "auth != null && auth.token.email === 'oliveora72@gmail.com'"
+      ".write": "auth != null && (auth.token.email === 'oliveora72@gmail.com' || auth.token.admin === true)"
     },
     "system": {
       ".read": "auth != null",
-      ".write": "auth != null && auth.token.email === 'oliveora72@gmail.com'"
+      ".write": "auth != null && (auth.token.email === 'oliveora72@gmail.com' || auth.token.admin === true)"
     },
     "users": {
-      ".read": "auth != null && auth.token.email === 'oliveora72@gmail.com'",
+      ".read": "auth != null && (auth.token.email === 'oliveora72@gmail.com' || auth.token.admin === true)",
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'oliveora72@gmail.com')",
-        ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'oliveora72@gmail.com')",
+        ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'oliveora72@gmail.com' || auth.token.admin === true)",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'oliveora72@gmail.com' || auth.token.admin === true)",
         "role": {
-          ".validate": "!data.exists() || newData.val() === data.val() || auth.token.email === 'oliveora72@gmail.com'"
+          ".validate": "!data.exists() || newData.val() === data.val() || auth.token.email === 'oliveora72@gmail.com' || auth.token.admin === true"
         }
       }
     },
     "keys": {
-      ".read": "auth != null && auth.token.email === 'oliveora72@gmail.com'",
+      ".read": "auth != null && (auth.token.email === 'oliveora72@gmail.com' || auth.token.admin === true)",
       ".indexOn": ["claimedBy", "status", "expiresAt"],
       "$hash": {
         ".read": "auth != null",
-        ".write": "auth != null && auth.token.email === 'oliveora72@gmail.com'",
+        ".write": "auth != null && (auth.token.email === 'oliveora72@gmail.com' || auth.token.admin === true)",
         "claimedBy": {
           ".write": "auth != null && !data.exists() && newData.val() === auth.uid && parent().child('status').val() === 'active' && parent().child('expiresAt').val() > now"
         },
